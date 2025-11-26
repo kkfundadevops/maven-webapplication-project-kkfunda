@@ -1,8 +1,6 @@
 name: CI Build → Sonar  → Tomcat
 
 on:
-  push:
-    branches: [ development ]
   workflow_dispatch:
 
 env:
