@@ -1,4 +1,4 @@
-name: CI Build → Sonar  → Tomcat
+name: CI Build Sonar Tomcat
 
 on:
   workflow_dispatch:
