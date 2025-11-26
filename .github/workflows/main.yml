@@ -1,7 +1,7 @@
-name: Simple CI and Deploy
+name: Simple Build and Deploy
 on:
-  push:
- 
+  workflow_dispatch:
+
 jobs:
   full:
     runs-on: ubuntu-latest
@@ -9,33 +9,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
-      - name: Build
-        run: mvn -B clean package
-      - name: Sonar
-        env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B sonar:sonar -Dsonar.host.url=${{ env.SONAR_HOST_URL }} -Dsonar.login=${{ env.SONAR_TOKEN }}
-      - name: Create settings.xml
-        run: |
-          mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml <<'EOF'
-          <settings>... as earlier ...</settings>
-          EOF
-        env:
-          NEXUS_SERVER_ID: ${{ secrets.NEXUS_SERVER_ID }}
-          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      - name: Deploy to Nexus
-        run: mvn -B deploy --settings ~/.m2/settings.xml
-      - name: Deploy to Tomcat
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - run: mvn -B clean package
+      - name: Deploy WAR to Tomcat
         env:
           TOMCAT_URL: ${{ secrets.TOMCAT_URL }}
           TOMCAT_USER: ${{ secrets.TOMCAT_USERNAME }}
           TOMCAT_PASS: ${{ secrets.TOMCAT_PASSWORD }}
         run: |
-          WAR_FILE=$(ls target/*.war | head -n 1)
-          curl -u ${TOMCAT_USER}:${TOMCAT_PASS} --upload-file "$WAR_FILE" "${TOMCAT_URL}/manager/text/deploy?path=/maven-web-application&update=true"
+          WAR=$(ls target/*.war | head -n 1)
+          curl -sS -u "${TOMCAT_USER}:${TOMCAT_PASS}" --upload-file "$WAR" "${TOMCAT_URL}/manager/text/deploy?path=/maven-web-application&update=true"
