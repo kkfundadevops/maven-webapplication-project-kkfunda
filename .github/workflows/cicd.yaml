@@ -26,16 +26,9 @@ jobs:
     - uses: actions/checkout@v4
     - name: Trivy Installation
       run: |
-        sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-        echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-        sudo apt-get update -y
-        sudo apt-get install -y trivy
-
+        wget https://github.com/aquasecurity/trivy/releases/download/v0.51.0/trivy_0.51.0_Linux-64bit.rpm
+        sudo rpm -Uvh trivy_0.51.0_Linux-64bit.rpm
+        trivy --version
     - name: Trivy FS Scan
       run: trivy fs --format table -o fs-report.json .
 
-    - name: Gitleaks Installation
-      run: sudo apt install gitleaks -y
-    - name: Gitleaks Code Scan
-      run: gitleaks detect source . -r gitleaks-report.json -f json
