@@ -30,9 +30,9 @@ jobs:
     - uses: actions/checkout@v4
     - name: Trivy Installation
       run: |
-        wget https://github.com/aquasecurity/trivy/releases/download/v0.51.0/trivy_0.51.0_Linux-64bit.rpm
-        sudo rpm -Uvh trivy_0.51.0_Linux-64bit.rpm
-        trivy --version
+       wget https://github.com/aquasecurity/trivy/releases/download/v0.67.2/trivy_0.67.2_Linux-64bit.deb
+       sudo dpkg -i trivy_0.67.2_Linux-64bit.deb
+       trivy --version
     - name: Trivy FS Scan
       run: trivy fs --format table -o fs-report.json .
   testing:
