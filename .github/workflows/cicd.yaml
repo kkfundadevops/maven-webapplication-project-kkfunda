@@ -1,7 +1,7 @@
 name: CICD Pipeline 
 
 on:
-  push:
+  workflow_dispatch:
  
 jobs:
   compile:
