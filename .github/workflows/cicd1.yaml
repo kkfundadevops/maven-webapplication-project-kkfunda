@@ -41,16 +41,8 @@ jobs:
         cache: maven
 
     - name: SonarQube Analysis
-      env:
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
       run: |
-        mvn -B verify sonar:sonar \
-          -Dsonar.host.url=$SONAR_HOST_URL \
-          -Dsonar.login=$SONAR_TOKEN \
-          -Dsonar.projectKey=$SONAR_PROJECT_KEY
-
+        mvn sonar:sonar
 
   security-check:
     runs-on: self-hosted
