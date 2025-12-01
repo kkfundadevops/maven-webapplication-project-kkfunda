@@ -4,80 +4,90 @@ on:
   workflow_dispatch:
 
 jobs:
+
   compile:
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: install maven
-      run: |
-        sudo apt update
-        sudo apt install maven -y
+      - name: install maven
+        run: |
+          sudo apt update
+          sudo apt install maven -y
 
-    - name: Build WAR
-      run: mvn -B clean package
+      - name: Build with Maven
+        run: mvn package
 
 
 
   sonarqube:
     runs-on: self-hosted
     needs: compile
-
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
 
-    - name: SonarQube Analysis
-      run: mvn sonar:sonar
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: SonarQube Analysis
+        run: mvn sonar:sonar
 
 
 
   security-check:
     runs-on: self-hosted
     needs: sonarqube
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Trivy
-      run: |
-        wget https://github.com/aquasecurity/trivy/releases/download/v0.67.2/trivy_0.67.2_Linux-64bit.deb
-        sudo dpkg -i trivy_0.67.2_Linux-64bit.deb
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.67.2/trivy_0.67.2_Linux-64bit.deb
+          sudo dpkg -i trivy_0.67.2_Linux-64bit.deb
 
-    - name: Trivy FS Scan
-      run: trivy fs --format table -o fs-report.json .
+      - name: Trivy FS Scan
+        run: trivy fs --format table -o fs-report.json .
 
 
 
   testing:
     runs-on: self-hosted
     needs: security-check
-
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
 
-    - name: Run Tests
-      run: mvn test
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: testing
+        run: mvn test
 
 
 
   docker-build:
     runs-on: self-hosted
     needs: testing
-
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Build Docker Image
-      run: docker build -t ${{ secrets.Docker_Repository }}:${{ github.sha }} .
+      - uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.Docker_Repository }}:${{ github.sha }} .
 
 
 
@@ -85,18 +95,18 @@ jobs:
     runs-on: self-hosted
     needs: docker-build
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Configure kubeconfig
-      run: |
-        aws eks update-kubeconfig \
-          --name ${{ secrets.EKS_CLUSTER_NAME }} \
-          --region ${{ secrets.AWS_REGION }}
+      - name: Configure kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ secrets.EKS_CLUSTER_NAME }} \
+            --region ${{ secrets.AWS_REGION }}
 
-    - name: Update Deployment Image
-      run: |
-        kubectl set image deployment/kkfunda-app \
-          kkfunda-app=${{ secrets.Docker_Repository }}:${{ github.sha }}
+      - name: Update Deployment Image
+        run: |
+          kubectl set image deployment/kkfunda-app \
+            kkfunda-app=${{ secrets.Docker_Repository }}:${{ github.sha }}
 
-    - name: Verify rollout
-      run: kubectl rollout status deployment/kkfunda-app
+      - name: Verify rollout
+        run: kubectl rollout status deployment/kkfunda-app
