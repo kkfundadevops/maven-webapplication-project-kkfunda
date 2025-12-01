@@ -23,7 +23,7 @@ jobs:
           sudo apt install maven -y
 
       - name: Build with Maven
-        run: mvn package
+        run: mvn -B clean package
 
 
 
