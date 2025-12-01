@@ -23,7 +23,7 @@ jobs:
           sudo apt install maven -y
 
       - name: Build with Maven
-        run: mvn -B clean package
+        run: mvn -B compile
 
 
 
@@ -75,7 +75,7 @@ jobs:
           cache: maven
 
       - name: testing
-        run: mvn test
+        run: mvn clean package
 
 
 
