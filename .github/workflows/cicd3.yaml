@@ -21,34 +21,28 @@ jobs:
         sudo apt update
         sudo apt install maven -y
 
-    - name: Build with Maven
-      run: mvn compile
+    - name: Build WAR
+      run: mvn -B clean package
 
 
 
   sonarqube:
-     runs-on: self-hosted
-     needs: compile
+    runs-on: self-hosted
+    needs: compile
 
-     steps:
-     - uses: actions/checkout@v4
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
 
-     - name: Set up JDK 17
-       uses: actions/setup-java@v4
-       with:
-         java-version: '17'
-         distribution: 'temurin'
-         cache: maven
-
-     - name: SonarQube Analysis
-       run: |
-         mvn sonar:sonar
+    - name: SonarQube Analysis
+      run: mvn sonar:sonar
 
 
 
   security-check:
     runs-on: self-hosted
     needs: sonarqube
+
     steps:
     - uses: actions/checkout@v4
 
@@ -68,27 +62,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-
-    - name: testing
+    - name: Run Tests
       run: mvn test
+
 
 
   docker-build:
     runs-on: self-hosted
     needs: testing
+
     steps:
     - uses: actions/checkout@v4
     
     - name: Build Docker Image
-      run: |
-        docker build -t ${{ secrets.Docker_Repository }}:${{ github.sha }} .
+      run: docker build -t ${{ secrets.Docker_Repository }}:${{ github.sha }} .
+
+
 
   deploy-eks:
     runs-on: self-hosted
