@@ -31,14 +31,14 @@ jobs:
     runs-on: self-hosted
     needs: compile
     steps:
-     # - uses: actions/checkout@v4
+    #  - uses: actions/checkout@v4
 
-     # - name: Set up JDK 17
-       # uses: actions/setup-java@v4
-        #with:
-         # java-version: '17'
-          #distribution: 'temurin'
-          #cache: maven
+    #  - name: Set up JDK 17
+    #    uses: actions/setup-java@v4
+    #     with:
+    #      java-version: '17'
+    #       distribution: 'temurin'
+    #       cache: maven
 
       - name: SonarQube Analysis
         run: mvn sonar:sonar
@@ -75,22 +75,22 @@ jobs:
 
 
 
-  deploy-eks:
-    runs-on: self-hosted
-    needs: docker-build
-    steps:
-      - uses: actions/checkout@v4
+  # deploy-eks:
+  #   runs-on: self-hosted
+  #   needs: docker-build
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Configure kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-            --name ${{ secrets.EKS_CLUSTER_NAME }} \
-            --region ${{ secrets.AWS_REGION }}
+  #     - name: Configure kubeconfig
+  #       run: |
+  #         aws eks update-kubeconfig \
+  #           --name ${{ secrets.EKS_CLUSTER_NAME }} \
+  #           --region ${{ secrets.AWS_REGION }}
 
-      - name: Update Deployment Image
-        run: |
-          kubectl set image deployment/kkfunda-app \
-            kkfunda-app=${{ secrets.Docker_Repository }}:${{ github.sha }}
+  #     - name: Update Deployment Image
+  #       run: |
+  #         kubectl set image deployment/kkfunda-app \
+  #           kkfunda-app=${{ secrets.Docker_Repository }}:${{ github.sha }}
 
-      - name: Verify rollout
-        run: kubectl rollout status deployment/kkfunda-app
+  #     - name: Verify rollout
+  #       run: kubectl rollout status deployment/kkfunda-app
