@@ -73,10 +73,10 @@ jobs:
         run: |
           docker build -t ${{ secrets.Docker_Repository }}:${{ github.sha }} .
     
-      # - name: Push images to Docker Hub
-      #   run: |
-      #     docker push ${{ secrets.Docker_Repository }}:${{ github.sha }}
-      #     docker push ${{ secrets.Docker_Repository }}:latest .
+      - name: Push images to Docker Hub
+        run: |
+          docker push ${{ secrets.Docker_Repository }}:${{ github.sha }}
+          docker push ${{ secrets.Docker_Repository }}:latest 
 
 
 
